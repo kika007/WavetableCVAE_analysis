@@ -38,7 +38,7 @@ The primary goal is to prepare a hybrid dataset for a **Conditional Variational 
 
 ---
 
-## 🔬 Analysis & Feature Selection
+## Analysis & Feature Selection
 Since each waveform is paired with a JSON file containing over 40 attributes, a significant part of this project is dedicated to **Feature Selection**. Not all attributes are equally relevant for generative modeling; therefore, we analyze which features provide the most meaningful control over the synthesized sound.
 
 ### Selection Criteria:
@@ -54,7 +54,7 @@ Since each waveform is paired with a JSON file containing over 40 attributes, a 
 
 ---
 
-## 🛠️ Data Preparation Pipeline
+## Data Preparation Pipeline
 This repository contains the logic for:
 1. **Multimodal Pairing:** Aligning `.wav` audio files with their corresponding `.json` metadata.
 2. **Normalization:** Implementing `ess_yeojohnson` scaling to prepare both audio and numerical features for neural network input.
