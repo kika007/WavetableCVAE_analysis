@@ -1,14 +1,7 @@
-# Python cache
 __pycache__/
 *.py[cod]
-
-# VS Code nastavenia
 .vscode/
-
-# Dáta a dočasné súbory
-data/
-
 *.pkl
-
-# Jupyter Notebook checkpoints
 .ipynb_checkpoints/
+data/*
+!data/.gitkeep
