@@ -1,63 +1,93 @@
 
 # DATASET ADVENTURE KID WAVEFORM (AKWF)  - Data Analysis & Preprocessing
 
+## Project Overview
+This repository is focused on analyzing and preprocessing the Adventure Kid Waveform (AKWF) dataset for use with a Conditional Variational Autoencoder (CVAE).
+
+The dataset includes single-cycle waveforms paired with JSON metadata describing technical, spectral, tonal and psychoacoustic features.
+
+## Repository Structure
+- `dash.py` — Streamlit dashboard for browsing and analyzing the preprocessed CVAE dataset.
+- `json_analysis.ipynb` — Jupyter notebook for dataset download, loading, cleanup, merging, integrity checks and feature exploration.
+- `data/` — Local dataset folder. It is initially empty and is populated by the notebook download step.
+- `.gitignore` — Ignore rules for local artifacts.
+
+## Data Location
+The notebook downloads and extracts the dataset into:
+- `data/AKWF_44k1_600s/AKWF_44k1_600s/`
+
+After running the notebook, this folder will contain:
+- `.wav` files for raw waveform data
+- `_analysis.json` files for extracted metadata and feature vectors
+
 ## Dataset Overview
-This project utilizes the [AKWF dataset](https://github.com/KristofferKarlAxelEkstrand/AKWF-FREE), a collection of thousands of single-cycle waveforms. This version is enhanced by pairing each audio sample with a corresponding metadata file.
+This project utilizes the [AKWF dataset](https://github.com/KristofferKarlAxelEkstrand/AKWF-FREE), a collection of thousands of single-cycle waveforms. The repository version is enhanced by pairing each audio sample with a corresponding metadata file.
 
-The complete dataset (Audio + JSON labels) is available here:  
-[**Download Processed Dataset**](https://drive.google.com/uc?id=13UhP_6tccMgPfv9-LF4zKeCGdrdPEgx8)
+**Example data pair:**
+- `AKWF_0001.wav` — Raw single-cycle waveform
+- `AKWF_0001_analysis.json` — Extracted features and metadata
 
-### Technical Specifications:
-* **Format:** File pairs of `.wav` (Audio) and `.json` (Metadata/Features)
-* **Sample Length:** 600 samples (Fixed)
-* **Bit Depth:** 16-bit
+### Technical Specifications
+* **Format:** `.wav` audio + `.json` metadata
+* **Sample Length:** 600 samples
 * **Sample Rate:** 44.1 kHz
 * **Channels:** Mono
 
----
+## Notebook Workflow (`json_analysis.ipynb`)
+The notebook performs the following steps:
+1. Download and extract the processed AKWF dataset from Google Drive.
+2. Load JSON label files into a Pandas DataFrame.
+3. Load WAV files using `torchaudio` and align them by sample name.
+4. Merge audio and metadata into a single dataset.
+5. Run data integrity checks for missing values, duplicates, data types, sample rate, duration, and waveform length.
+6. Visualize outliers and normalized waveforms.
+7. Export the cleaned dataset for downstream use.
 
-## Dataset Structure
-The dataset is organized as a collection of file pairs. For every audio sample, there is a matching JSON file containing rich descriptors.
+## Key Features and Analysis
+The dataset contains both technical and perceptual descriptors. Relevant JSON feature categories include:
+* **Technical:** `duration`, `samplerate`, `bitrate`, `codec`, `filesize`
+* **Tonal / Pitch:** `tonality`, `note_frequency`, `note_confidence`
+* **Spectral:** `SpectralCentroid`, `SpectralSpread`, `SpectralKurtosis`, `SpectralComplexity`, `OddToEvenHarmonicEnergyRatio`, `Dissonance`, `PitchSalience`, `HNR`
+* **Psychoacoustic:** `warmth`, `brightness`, `roughness`, `hardness`, `sharpness`, `boominess`
 
-**Example:**
-- `AKWF_0001.wav` – Raw single-cycle waveform.
-- `AKWF_0001_analysis.json` – Extracted features and metadata.
+Feature selection is driven by:
+* correlation analysis
+* variance and distribution
+* redundancy reduction
 
-### Key JSON Features:
-* **Technical:** `duration`, `samplerate`, `bitrate`, `codec`, `filesize`.
-* **Tonal/Pitch:** `tonality`, `note_name`, `note_frequency`, `note_confidence`.
-* **Spectral:** `SpectralCentroid`, `SpectralComplexity`, `HNR`, `Dissonance`.
-* **Psychoacoustic:** `warmth`, `brightness`, `roughness`, `hardness`, `sharpness`, `boominess`.
-* **Synthesis (DCO):** `dco_brightness`, `dco_richness`, `dco_oddenergy`, `dco_zcr`.
+## Streamlit Dashboard (`dash.py`)
+The dashboard loads a preprocessed dataset file named `dataset_cvae.pkl` and provides:
+* interactive latent-space visualization
+* axis selection for acoustic features
+* filtering by feature ranges
+* sample waveform preview and metrics
+* correlation guidance for feature pair selection
 
----
+### Running the dashboard
+```bash
+streamlit run dash.py
+```
 
-The primary goal is to prepare a hybrid dataset for a **Conditional Variational Autoencoder (CVAE)**. The model is designed to receive a dual input:
-1. **Raw Audio Data:** The 600-sample single-cycle waveforms.
-2. **Selected JSON Attributes:** A curated set of features used as conditioning labels.
+> Note: `dataset_cvae.pkl` is expected to be generated from the notebook export step.
 
----
 
-## Analysis & Feature Selection
-Since each waveform is paired with a JSON file containing over 40 attributes, a significant part of this project is dedicated to **Feature Selection**. Not all attributes are equally relevant for generative modeling; therefore, we analyze which features provide the most meaningful control over the synthesized sound.
+## Setup
+Create a dedicated Conda environment with Python 3.8.5 and install the project requirements:
 
-### Selection Criteria:
-* **Correlation Analysis:** Identifying which spectral features (like `SpectralCentroid`) best represent subjective qualities like `brightness`.
-* **Variance & Distribution:** Selecting features with high variance that clearly distinguish different waveform categories.
-* **Redundancy Reduction:** Removing highly correlated features to prevent bias and simplify the model's latent space.
+```bash
+conda create -n 'env_name' python=3.8.5 -y
+conda activate 'env_name'
+pip install -r requirements.txt
+```
+> If you prefer Conda-only installation, install `python=3.8.5` first and use `pip install -r requirements.txt` for the Python packages.
 
-### Available Feature Categories for Selection:
-* **Spectral:** `SpectralCentroid`, `SpectralComplexity`, `HNR`, `Dissonance`.
-* **Psychoacoustic:** `warmth`, `brightness`, `roughness`, `hardness`, `sharpness`.
-* **Tonal/Pitch:** `tonality`, `note_frequency`, `note_confidence`.
-* **Synthesis (DCO):** `dco_brightness`, `dco_richness`, `dco_oddenergy`.
+## Usage
+1. Open `json_analysis.ipynb` and run the preprocessing pipeline.
+2. Export the cleaned dataset to `dataset_cvae.pkl`.
+3. Launch the dashboard with `streamlit run dash.py`.
 
----
+## Notes
+This repository is aimed at creating a clean, label-rich dataset for CVAE-based sound generation and controllable wavetable synthesis.
 
-## Data Preparation Pipeline
-This repository contains the logic for:
-1. **Multimodal Pairing:** Aligning `.wav` audio files with their corresponding `.json` metadata.
-2. **Normalization:** Implementing `ess_yeojohnson` scaling to prepare both audio and numerical features for neural network input.
-3. **Filtering:** Scripts to down-select the most relevant features based on the analysis results.
-4. **Data Formatting:** Converting the selected hybrid data into a format (e.g., NumPy arrays or Tensors) ready for the CVAE training loop.
+
 
