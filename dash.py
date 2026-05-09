@@ -19,7 +19,16 @@ def load_data():
         st.stop()
 
 df = load_data()
-label_cols = ['Brightness', 'Richness', 'Fullness', 'Symmetry', 'Undulation']
+feature_cols = [
+    col for col in df.columns
+    if col not in {'name', 'waveform', 'sample_rate'} and np.issubdtype(df[col].dtype, np.number)
+]
+
+if not feature_cols:
+    st.error("No numeric feature columns found in the dataset.")
+    st.stop()
+
+label_cols = feature_cols
 
 if 'selected_idx' not in st.session_state:
     st.session_state.selected_idx = 0
@@ -29,12 +38,19 @@ if 'selected_idx' not in st.session_state:
 # ==========================================
 st.sidebar.header("Space Configuration")
 axis_x = st.sidebar.selectbox("X Axis (Model Input)", label_cols, index=0)
-axis_y = st.sidebar.selectbox("Y Axis (Model Input)", label_cols, index=1)
+axis_y = st.sidebar.selectbox("Y Axis (Model Input)", label_cols, index=1 if len(label_cols) > 1 else 0)
 
 st.sidebar.markdown("---")
 st.sidebar.header("Data Filtering")
-min_x, max_x = st.sidebar.slider(f"Range for {axis_x}", -4.0, 4.0, (-2.5, 2.5))
-min_y, max_y = st.sidebar.slider(f"Range for {axis_y}", -4.0, 4.0, (-2.5, 2.5))
+min_x_val, max_x_val = float(df[axis_x].min()), float(df[axis_x].max())
+min_y_val, max_y_val = float(df[axis_y].min()), float(df[axis_y].max())
+
+min_x, max_x = st.sidebar.slider(
+    f"Range for {axis_x}", min_x_val, max_x_val, (min_x_val, max_x_val)
+)
+min_y, max_y = st.sidebar.slider(
+    f"Range for {axis_y}", min_y_val, max_y_val, (min_y_val, max_y_val)
+)
 
 filtered_df = df[
     (df[axis_x] >= min_x) & (df[axis_x] <= max_x) &

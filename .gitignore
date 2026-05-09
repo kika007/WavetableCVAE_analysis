@@ -1,7 +1,7 @@
 __pycache__/
 *.py[cod]
 .vscode/
-*.pkl
 .ipynb_checkpoints/
 data/*
 !data/.gitkeep
+dataset
